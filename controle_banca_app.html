@@ -1,0 +1,2180 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle de Banca</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#0B0F14;--bg2:#1C1F26;--bg3:#252930;--bg4:#2E333C;
+--green:#00C853;--green2:#009624;--green3:#00E676;
+--red:#FF3B30;--yellow:#FFC107;
+--text:#E8EAF0;--text2:#AAB0C0;--text3:#6B7280;
+--border:#2E333C;--border2:#3D4350;
+--card:#1C1F26;--card2:#252930;
+font-family:'Inter',sans-serif;
+}
+body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.poppins{font-family:'Poppins',sans-serif}
+
+/* LAYOUT */
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:240px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:0;flex-shrink:0;transition:all .3s}
+.sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border)}
+.logo-wrap{display:flex;align-items:center;gap:10px}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--green),var(--green2));border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-text{font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:var(--text);line-height:1.1}
+.logo-sub{font-size:10px;color:var(--text2);font-weight:400}
+.nav{flex:1;padding:12px 0;overflow-y:auto}
+.nav-section{padding:6px 16px 4px;font-size:10px;text-transform:uppercase;color:var(--text3);letter-spacing:1px;font-weight:500}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;transition:all .2s;border-left:3px solid transparent;font-size:13px;color:var(--text2);margin:1px 0}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:rgba(0,200,83,.1);color:var(--green);border-left-color:var(--green)}
+.nav-item svg{width:16px;height:16px;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--green);color:#000;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px}
+.sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+.user-card{display:flex;align-items:center;gap:10px}
+.avatar{width:32px;height:32px;background:linear-gradient(135deg,var(--green),var(--green2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#000;flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-role{font-size:10px;color:var(--text2)}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-title{font-family:'Poppins',sans-serif;font-size:16px;font-weight:600;color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;border:none;font-family:'Inter',sans-serif}
+.btn-primary{background:var(--green);color:#000;font-weight:600}
+.btn-primary:hover{background:var(--green3)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--border2)}
+.btn-secondary:hover{background:var(--bg4);color:var(--text)}
+.btn-danger{background:rgba(255,59,48,.15);color:var(--red);border:1px solid rgba(255,59,48,.3)}
+.btn svg{width:13px;height:13px}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:rgba(0,200,83,.15);color:var(--green)}
+.badge-red{background:rgba(255,59,48,.15);color:var(--red)}
+.badge-yellow{background:rgba(255,193,7,.15);color:var(--yellow)}
+.badge-gray{background:var(--bg3);color:var(--text2)}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:24px}
+.page{display:none}
+.page.active{display:block}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px}
+.card-sm{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px}
+.stat-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;font-weight:500}
+.stat-value{font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px}
+.stat-value.green{color:var(--green)}
+.stat-value.red{color:var(--red)}
+.stat-change{font-size:11px;color:var(--text2)}
+.stat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.stat-icon.green{background:rgba(0,200,83,.15)}
+.stat-icon.red{background:rgba(255,59,48,.15)}
+.stat-icon.blue{background:rgba(99,179,237,.15)}
+.stat-icon.yellow{background:rgba(255,193,7,.15)}
+
+/* TABLE */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{border-bottom:1px solid var(--border)}
+thead th{padding:10px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);font-weight:500;white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
+tbody tr:hover{background:var(--bg3)}
+tbody td{padding:11px 14px;color:var(--text);white-space:nowrap}
+tbody tr:last-child{border-bottom:none}
+
+/* FORM */
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.form-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;transition:border-color .2s;outline:none}
+.form-input:focus{border-color:var(--green)}
+.form-input::placeholder{color:var(--text3)}
+select.form-input option{background:var(--bg2)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(4px)}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:28px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.modal-title{font-family:'Poppins',sans-serif;font-size:17px;font-weight:700;color:var(--text)}
+.modal-close{background:var(--bg3);border:none;color:var(--text2);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{color:var(--text);background:var(--bg4)}
+
+/* AUTH */
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px}
+.auth-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:36px;width:100%;max-width:420px}
+.auth-logo{text-align:center;margin-bottom:28px}
+.auth-title{font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;color:var(--text);text-align:center;margin-bottom:6px}
+.auth-sub{font-size:13px;color:var(--text2);text-align:center;margin-bottom:28px}
+.auth-footer{text-align:center;margin-top:20px;font-size:13px;color:var(--text2)}
+.auth-link{color:var(--green);cursor:pointer;font-weight:600}
+.auth-link:hover{text-decoration:underline}
+.auth-divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--text3);font-size:12px}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* PROGRESS */
+.progress-bar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:var(--green);border-radius:3px;transition:width .4s}
+.progress-fill.red{background:var(--red)}
+.progress-fill.yellow{background:var(--yellow)}
+
+/* CHART CONTAINER */
+.chart-wrap{position:relative;width:100%}
+
+/* MINI CHART */
+.sparkline{display:flex;align-items:flex-end;gap:2px;height:40px}
+.spark-bar{flex:1;border-radius:2px 2px 0 0;transition:height .4s}
+.spark-bar.win{background:var(--green)}
+.spark-bar.loss{background:var(--red)}
+
+/* BANCA CARD */
+.banca-hero{background:linear-gradient(135deg,#0d2818,#1a3d25);border:1px solid rgba(0,200,83,.2);border-radius:18px;padding:28px;margin-bottom:20px;position:relative;overflow:hidden}
+.banca-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(0,200,83,.08),transparent 70%);pointer-events:none}
+.banca-amount{font-family:'Poppins',sans-serif;font-size:38px;font-weight:800;color:var(--green);margin:8px 0}
+.banca-label{font-size:13px;color:rgba(0,200,83,.7);text-transform:uppercase;letter-spacing:1px;font-weight:500}
+.banca-info{display:flex;gap:24px;margin-top:20px}
+.banca-info-item{flex:1}
+.banca-info-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.banca-info-value{font-size:15px;font-weight:600;color:var(--text)}
+
+/* ALERTS */
+.alert{padding:12px 14px;border-radius:10px;font-size:13px;display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.alert-green{background:rgba(0,200,83,.1);border:1px solid rgba(0,200,83,.2);color:rgba(0,200,83,.9)}
+.alert-yellow{background:rgba(255,193,7,.1);border:1px solid rgba(255,193,7,.2);color:rgba(255,193,7,.9)}
+.alert-red{background:rgba(255,59,48,.1);border:1px solid rgba(255,59,48,.2);color:rgba(255,59,48,.9)}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+.sidebar{width:0;overflow:hidden;position:absolute;z-index:50;height:100%}
+.sidebar.open{width:240px}
+.grid-4,.grid-3{grid-template-columns:1fr 1fr}
+.form-row,.form-row-3{grid-template-columns:1fr}
+.banca-amount{font-size:28px}
+}
+@media(max-width:480px){
+.grid-4,.grid-3,.grid-2{grid-template-columns:1fr}
+.content{padding:16px}
+.topbar{padding:0 16px}
+}
+
+/* TAGS */
+.tag{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.tag-win{background:rgba(0,200,83,.15);color:var(--green);border:1px solid rgba(0,200,83,.25)}
+.tag-loss{background:rgba(255,59,48,.15);color:var(--red);border:1px solid rgba(255,59,48,.25)}
+.tag-void{background:rgba(255,193,7,.15);color:var(--yellow);border:1px solid rgba(255,193,7,.25)}
+.tag-pending{background:var(--bg3);color:var(--text2);border:1px solid var(--border2)}
+
+/* SECTION HEADER */
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.section-title{font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;color:var(--text)}
+.section-sub{font-size:12px;color:var(--text2);margin-top:2px}
+
+/* RISK METER */
+.risk-meter{display:flex;gap:4px;margin-top:12px}
+.risk-seg{flex:1;height:8px;border-radius:4px}
+
+/* INPUT SEARCH */
+.search-wrap{position:relative}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--text3)}
+.search-wrap .form-input{padding-left:32px}
+
+/* CHIP FILTERS */
+.chip-group{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.chip{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;border:1px solid var(--border2);background:transparent;color:var(--text2)}
+.chip:hover{background:var(--bg3);color:var(--text)}
+.chip.active{background:rgba(0,200,83,.15);border-color:var(--green);color:var(--green)}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:48px 20px;color:var(--text2)}
+.empty-icon{font-size:40px;margin-bottom:12px;opacity:.4}
+.empty-text{font-size:14px;font-weight:500;color:var(--text2);margin-bottom:6px}
+.empty-sub{font-size:12px;color:var(--text3)}
+
+/* TOOLTIP */
+.tip{position:relative;display:inline-flex}
+.tip:hover .tip-text{opacity:1;transform:translateY(0)}
+.tip-text{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%) translateY(4px);background:var(--bg4);color:var(--text);font-size:11px;white-space:nowrap;padding:4px 8px;border-radius:6px;pointer-events:none;opacity:0;transition:all .2s;z-index:10}
+
+/* TOGGLE */
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-slider{position:absolute;inset:0;background:var(--bg4);border-radius:11px;cursor:pointer;transition:.3s}
+.toggle-slider::before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:var(--text2);border-radius:50%;transition:.3s}
+.toggle input:checked+.toggle-slider{background:var(--green)}
+.toggle input:checked+.toggle-slider::before{transform:translateX(18px);background:#000}
+
+/* KELLY CALC */
+.kelly-result{background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:16px;margin-top:14px}
+.kelly-big{font-family:'Poppins',sans-serif;font-size:28px;font-weight:800;color:var(--green)}
+.kelly-unit{font-size:13px;color:var(--text2);margin-top:4px}
+
+/* TIMELINE */
+.timeline{position:relative;padding-left:20px}
+.timeline::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:2px;background:var(--border)}
+.timeline-item{position:relative;margin-bottom:18px}
+.timeline-dot{position:absolute;left:-24px;top:4px;width:10px;height:10px;border-radius:50%;border:2px solid var(--bg2)}
+.timeline-dot.green{background:var(--green)}
+.timeline-dot.red{background:var(--red)}
+.timeline-dot.gray{background:var(--text3)}
+.timeline-text{font-size:13px;color:var(--text)}
+.timeline-meta{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* FADE IN */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.page.active{animation:fadeIn .25s ease}
+</style>
+</head>
+<body>
+
+<!-- AUTH PAGE -->
+<div id="authPage" class="auth-wrap">
+<div class="auth-card">
+  <div class="auth-logo">
+    <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+      <rect width="52" height="52" rx="14" fill="#00C853"/>
+      <path d="M14 36 L14 28 L20 22 L26 30 L32 18 L38 26" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <circle cx="38" cy="26" r="3" fill="black"/>
+      <text x="14" y="46" font-family="Poppins,sans-serif" font-size="9" font-weight="800" fill="black">CB</text>
+    </svg>
+  </div>
+  <div class="auth-title poppins">Controle de Banca</div>
+  <div class="auth-sub">Gerencie sua banca com inteligência.</div>
+  
+  <div id="loginForm">
+    <div class="form-group">
+      <label class="form-label">E-mail</label>
+      <input class="form-input" type="email" placeholder="seu@email.com" id="loginEmail" value="felipe@email.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Senha</label>
+      <input class="form-input" type="password" placeholder="••••••••" id="loginPass" value="12345678">
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);cursor:pointer">
+        <input type="checkbox" checked style="accent-color:var(--green)"> Lembrar-me
+      </label>
+      <span class="auth-link" style="font-size:12px">Esqueci minha senha</span>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:11px" onclick="doLogin()">Entrar na conta</button>
+    <div class="auth-footer">
+      Não tem conta? <span class="auth-link" onclick="showRegister()">Criar conta grátis</span>
+    </div>
+  </div>
+  
+  <div id="registerForm" style="display:none">
+    <div class="form-group">
+      <label class="form-label">Nome completo</label>
+      <input class="form-input" type="text" placeholder="Felipe Andrade">
+    </div>
+    <div class="form-group">
+      <label class="form-label">E-mail</label>
+      <input class="form-input" type="email" placeholder="seu@email.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Banca inicial (R$)</label>
+      <input class="form-input" type="number" placeholder="1000.00" id="bancaInicial">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Senha</label>
+      <input class="form-input" type="password" placeholder="Mínimo 8 caracteres">
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:11px" onclick="doRegister()">Criar conta grátis</button>
+    <div class="auth-footer">
+      Já tem conta? <span class="auth-link" onclick="showLogin()">Fazer login</span>
+    </div>
+  </div>
+  
+  <div style="text-align:center;margin-top:24px;padding-top:16px;border-top:1px solid var(--border);font-size:11px;color:var(--text3)">
+    © 2026 Felipe Andrade — Projeto gratuito
+  </div>
+</div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp" class="app" style="display:none">
+  
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-wrap">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M3 15 L3 10 L7 6 L11 12 L15 4 L18 8" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <circle cx="18" cy="8" r="2" fill="black"/>
+          </svg>
+        </div>
+        <div>
+          <div class="logo-text">Controle de Banca</div>
+          <div class="logo-sub">v1.0 — Gratuito</div>
+        </div>
+      </div>
+    </div>
+    
+    <nav class="nav">
+      <div class="nav-section">Principal</div>
+      <div class="nav-item active" onclick="showPage('dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" onclick="showPage('novaAposta')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Nova Aposta
+        <span class="nav-badge" id="pendingBadge"></span>
+      </div>
+      <div class="nav-item" onclick="showPage('historico')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM15 15h6v6h-6z"/></svg>
+        Histórico
+      </div>
+      <div class="nav-section">Análise</div>
+      <div class="nav-item" onclick="showPage('relatorios')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+        Relatórios
+      </div>
+      <div class="nav-item" onclick="showPage('gestaoRisco')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7v5c0 5.5 4.2 10.7 10 12 5.8-1.3 10-6.5 10-12V7L12 2z"/></svg>
+        Gestão de Risco
+      </div>
+      <div class="nav-section">Sistema</div>
+      <div class="nav-item" onclick="showPage('configuracoes')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Configurações
+      </div>
+    </nav>
+    
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="avatar">FA</div>
+        <div class="user-info">
+          <div class="user-name">Felipe Andrade</div>
+          <div class="user-role">Apostador Pro</div>
+        </div>
+        <svg onclick="doLogout()" style="width:14px;height:14px;color:var(--text3);cursor:pointer;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      </div>
+    </div>
+  </aside>
+  
+  <!-- MAIN CONTENT AREA -->
+  <div class="main">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button onclick="toggleSidebar()" style="background:none;border:none;cursor:pointer;color:var(--text2);display:flex" id="menuBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="topbar-title" id="pageTitle">Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <span id="topbarBanca" style="font-size:13px;color:var(--green);font-weight:600;font-family:'Poppins',sans-serif"></span>
+        <button class="btn btn-primary" onclick="showPage('novaAposta')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nova Aposta
+        </button>
+      </div>
+    </div>
+    
+    <!-- PAGES -->
+    <div class="content">
+      
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        
+        <div class="banca-hero">
+          <div class="banca-label">Saldo da Banca</div>
+          <div class="banca-amount" id="bancaDisplay">R$ 0,00</div>
+          <div class="banca-info">
+            <div class="banca-info-item">
+              <div class="banca-info-label">Banca Inicial</div>
+              <div class="banca-info-value" id="bancaInicialDisplay">R$ 0,00</div>
+            </div>
+            <div class="banca-info-item">
+              <div class="banca-info-label">Lucro Total</div>
+              <div class="banca-info-value" id="lucroDisplay" style="color:var(--green)">+R$ 0,00</div>
+            </div>
+            <div class="banca-info-item">
+              <div class="banca-info-label">Variação</div>
+              <div class="banca-info-value" id="variacaoDisplay" style="color:var(--green)">0.00%</div>
+            </div>
+            <div class="banca-info-item">
+              <div class="banca-info-label">Total Apostas</div>
+              <div class="banca-info-value" id="totalApostasDisplay">0</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="grid-4">
+          <div class="card-sm">
+            <div class="stat-icon green">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00C853" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            </div>
+            <div class="stat-label">ROI</div>
+            <div class="stat-value" id="roiDisplay">0.00%</div>
+            <div class="stat-change" id="roiSub">Retorno sobre investimento</div>
+          </div>
+          <div class="card-sm">
+            <div class="stat-icon blue">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#63b3ed" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div class="stat-label">Taxa de Acerto</div>
+            <div class="stat-value" id="acertoDisplay">0%</div>
+            <div class="stat-change" id="acertoSub">Wins / Total apostas</div>
+          </div>
+          <div class="card-sm">
+            <div class="stat-icon yellow">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFC107" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="stat-label">Média de Odds</div>
+            <div class="stat-value" id="oddMedia">0.00</div>
+            <div class="stat-change">Odds média das apostas</div>
+          </div>
+          <div class="card-sm">
+            <div class="stat-icon red">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF3B30" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+            <div class="stat-label">Maior Perda</div>
+            <div class="stat-value red" id="maiorPerda">R$ 0</div>
+            <div class="stat-change">Pior aposta registrada</div>
+          </div>
+        </div>
+        
+        <div class="grid-2">
+          <div class="card">
+            <div class="section-header">
+              <div>
+                <div class="section-title">Evolução da Banca</div>
+                <div class="section-sub">Histórico de saldo</div>
+              </div>
+            </div>
+            <div class="chart-wrap" style="height:200px">
+              <canvas id="bancaChart" role="img" aria-label="Gráfico de evolução da banca"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="section-header">
+              <div>
+                <div class="section-title">Distribuição de Resultados</div>
+                <div class="section-sub">Win / Loss / Void</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:16px">
+              <div class="chart-wrap" style="height:180px;width:180px;flex-shrink:0">
+                <canvas id="resultChart" role="img" aria-label="Gráfico de distribuição de resultados"></canvas>
+              </div>
+              <div id="resultLegend" style="flex:1"></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="section-header">
+            <div>
+              <div class="section-title">Últimas Apostas</div>
+              <div class="section-sub">5 apostas mais recentes</div>
+            </div>
+            <button class="btn btn-secondary" onclick="showPage('historico')">Ver todas</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Evento</th>
+                  <th>Tipo</th>
+                  <th>Odd</th>
+                  <th>Stake</th>
+                  <th>Resultado</th>
+                  <th>P&L</th>
+                </tr>
+              </thead>
+              <tbody id="ultimasApostas">
+                <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text3)">Nenhuma aposta registrada ainda.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0B0F14;--bg2:#1C1F26;--bg3:#252930;--bg4:#2E333C;
+--green:#00C853;--green2:#009624;
+--red:#FF3B30;--yellow:#FFC107;--blue:#63b3ed;
+--text:#E8EAF0;--text2:#AAB0C0;--text3:#6B7280;
+--border:#2E333C;--border2:#3D4350;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;padding:16px}
+.poppins{font-family:'Poppins','Inter',sans-serif}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
+.section-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;font-family:'Poppins','Inter',sans-serif}
+.section-sub{font-size:12px;color:var(--text2);margin-bottom:16px}
+.label{display:block;font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+input,select,textarea{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 11px;color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:border-color .2s}
+input:focus,select:focus{border-color:var(--green)}
+input::placeholder{color:var(--text3)}
+select option{background:var(--bg2)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .2s}
+.btn-primary{background:var(--green);color:#000}
+.btn-primary:hover{background:#00e676}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--border2)}
+.btn-secondary:hover{background:var(--bg4);color:var(--text)}
+.btn-ghost{background:transparent;color:var(--text3);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--red);border-color:var(--red)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-add{background:rgba(0,200,83,.1);color:var(--green);border:1px solid rgba(0,200,83,.25);width:100%;justify-content:center;padding:10px}
+.btn-add:hover{background:rgba(0,200,83,.2)}
+.tag{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.tab-bar{display:flex;gap:4px;background:var(--bg3);border-radius:10px;padding:4px;margin-bottom:20px}
+.tab{flex:1;text-align:center;padding:8px 10px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text2);transition:all .2s}
+.tab.active{background:var(--bg2);color:var(--green);border:1px solid rgba(0,200,83,.25)}
+
+/* SELECAO TIPO */
+.tipo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.tipo-btn{padding:9px 6px;border:1.5px solid var(--border2);border-radius:8px;text-align:center;cursor:pointer;font-size:11px;font-weight:700;color:var(--text2);background:transparent;transition:all .2s}
+.tipo-btn:hover{border-color:var(--text2);color:var(--text)}
+.tipo-btn.active{border-color:var(--green);color:var(--green);background:rgba(0,200,83,.1)}
+
+/* JOGO ROW */
+.jogo-row{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
+.jogo-num{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(0,200,83,.15);color:var(--green);font-size:11px;font-weight:700;margin-right:6px;flex-shrink:0}
+.jogo-header{display:flex;align-items:center;margin-bottom:12px}
+.jogo-header-title{font-size:12px;font-weight:600;color:var(--text2);flex:1}
+.teams-row{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-bottom:12px}
+.x-sep{width:28px;height:28px;background:var(--bg4);border:1px solid var(--border2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--text2);flex-shrink:0;align-self:center}
+
+/* MERCADOS */
+.mercados-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.mercado-chip{padding:5px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border2);color:var(--text2);background:transparent;transition:all .2s;white-space:nowrap}
+.mercado-chip:hover{border-color:var(--text2);color:var(--text)}
+.mercado-chip.sel{background:rgba(99,179,237,.15);border-color:var(--blue);color:var(--blue)}
+.mercado-custom{display:flex;gap:6px;margin-bottom:10px}
+
+/* LINHA DE MERCADO SELECIONADO */
+.mercado-linha{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.2);border-radius:8px;padding:8px 10px;margin-bottom:6px}
+.mercado-nome{flex:1;font-size:12px;color:var(--text);font-weight:500}
+.odd-input{width:80px;text-align:center;font-weight:700;font-family:'Poppins','Inter',sans-serif}
+
+/* RESUMO MÚLTIPLA */
+.resumo{background:linear-gradient(135deg,#0d2818,#1a3d25);border:1px solid rgba(0,200,83,.2);border-radius:14px;padding:20px;margin-bottom:16px}
+.resumo-odd{font-size:36px;font-weight:900;color:var(--green);font-family:'Poppins','Inter',sans-serif}
+.resumo-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+.resumo-label{color:rgba(255,255,255,.5)}
+.resumo-val{font-weight:700;color:var(--text)}
+.resumo-val.green{color:var(--green)}
+.resumo-val.red{color:var(--red)}
+.chips-jogos-sum{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
+.chip-jogo{background:rgba(0,200,83,.1);border:1px solid rgba(0,200,83,.2);color:rgba(0,200,83,.9);padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+
+/* RESULTADO SELETOR */
+.res-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.res-btn{padding:9px 4px;border:1.5px solid var(--border2);border-radius:8px;text-align:center;cursor:pointer;font-size:11px;font-weight:700;color:var(--text2);background:transparent;transition:all .2s}
+.res-btn:hover{border-color:var(--text2)}
+.res-btn[data-r="win"].sel{border-color:var(--green);color:var(--green);background:rgba(0,200,83,.1)}
+.res-btn[data-r="loss"].sel{border-color:var(--red);color:var(--red);background:rgba(255,59,48,.1)}
+.res-btn[data-r="void"].sel{border-color:var(--yellow);color:var(--yellow);background:rgba(255,193,7,.1)}
+.res-btn[data-r="pending"].sel{border-color:var(--green);color:var(--green);background:rgba(0,200,83,.1)}
+
+.divider{height:1px;background:var(--border);margin:16px 0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.alert-warn{background:rgba(255,193,7,.08);border:1px solid rgba(255,193,7,.2);color:rgba(255,193,7,.9);border-radius:8px;padding:10px 12px;font-size:12px;display:flex;gap:8px;align-items:center;margin-bottom:14px}
+.notify{position:fixed;bottom:20px;right:20px;background:var(--green);color:#000;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:700;opacity:0;transition:opacity .3s;pointer-events:none;z-index:200}
+</style>
+
+<div style="max-width:640px;margin:0 auto">
+
+<div class="tab-bar">
+  <div class="tab active" onclick="switchTab('simples',this)">Simples</div>
+  <div class="tab" onclick="switchTab('multipla',this)">Múltipla</div>
+  <div class="tab" onclick="switchTab('personalizada',this)">Personalizada</div>
+  <div class="tab" onclick="switchTab('sistema',this)">Sistema</div>
+</div>
+
+<!-- ===== ABA SIMPLES ===== -->
+<div id="tab-simples">
+  <div class="card">
+    <div class="section-title">Aposta Simples</div>
+    <div class="section-sub">Um único jogo, um único mercado</div>
+
+    <div style="margin-bottom:14px">
+      <label class="label">Jogo</label>
+      <div class="teams-row">
+        <div><input placeholder="Time da casa" id="s_time1"></div>
+        <div class="x-sep">X</div>
+        <div><input placeholder="Time visitante" id="s_time2"></div>
+      </div>
+    </div>
+
+    <div class="row2" style="margin-bottom:14px">
+      <div>
+        <label class="label">Data</label>
+        <input type="date" id="s_data">
+      </div>
+      <div>
+        <label class="label">Casa de Apostas</label>
+        <input placeholder="Bet365, Betano..." id="s_casa">
+      </div>
+    </div>
+
+    <div style="margin-bottom:14px">
+      <label class="label">Mercado</label>
+      <div class="mercados-wrap" id="s_mercados">
+        <div class="mercado-chip sel" onclick="selMercado(this,'s')">1X2</div>
+        <div class="mercado-chip" onclick="selMercado(this,'s')">Dupla Chance</div>
+        <div class="mercado-chip" onclick="selMercado(this,'s')">Ambas Marcam</div>
+        <div class="mercado-chip" onclick="selMercado(this,'s')">Mais de 2.5</div>
+        <div class="mercado-chip" onclick="selMercado(this,'s')">Menos de 2.5</div>
+        <div class="mercado-chip" onclick="selMercado(this,'s')">Asian Handicap</div>
+        <div class="mercado-chip" onclick="selMercado(this,'s')">Escanteios</div>
+        <div class="mercado-chip" onclick="selMercado(this,'s')">Cartões</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <input placeholder="Mercado personalizado..." id="s_mkt_custom" style="flex:1">
+        <button class="btn btn-secondary btn-sm" onclick="addMktCustom('s')">+ Adicionar</button>
+      </div>
+    </div>
+
+    <div class="row3" style="margin-bottom:14px">
+      <div>
+        <label class="label">Seleção / Resultado</label>
+        <input placeholder="Ex: 1, X, 2, Sim, Não..." id="s_selecao">
+      </div>
+      <div>
+        <label class="label">Odd</label>
+        <input type="number" step="0.01" min="1.01" placeholder="2.50" id="s_odd" oninput="calcSimples()">
+      </div>
+      <div>
+        <label class="label">Stake (R$)</label>
+        <input type="number" step="0.01" min="0" placeholder="50.00" id="s_stake" oninput="calcSimples()">
+      </div>
+    </div>
+
+    <div id="s_preview" style="display:none;background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:14px">
+      <div class="resumo-row"><span class="resumo-label">Retorno potencial</span><span class="resumo-val green" id="s_retorno">R$ 0</span></div>
+      <div class="resumo-row"><span class="resumo-label">Lucro potencial</span><span class="resumo-val green" id="s_lucro">R$ 0</span></div>
+      <div class="resumo-row" style="margin-bottom:0"><span class="resumo-label">% da banca</span><span class="resumo-val" id="s_pct">–</span></div>
+    </div>
+
+    <div style="margin-bottom:14px">
+      <label class="label">Resultado</label>
+      <div class="res-grid">
+        <div class="res-btn sel" data-r="pending" onclick="selRes(this,'s')">Em aberto</div>
+        <div class="res-btn" data-r="win" onclick="selRes(this,'s')">WIN</div>
+        <div class="res-btn" data-r="loss" onclick="selRes(this,'s')">LOSS</div>
+        <div class="res-btn" data-r="void" onclick="selRes(this,'s')">VOID</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:14px">
+      <label class="label">Notas</label>
+      <textarea rows="2" placeholder="Análise, tipster, observações..." id="s_notas" style="resize:vertical"></textarea>
+    </div>
+
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:13px" onclick="salvar('simples')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      Salvar Aposta Simples
+    </button>
+  </div>
+</div>
+
+<!-- ===== ABA MÚLTIPLA ===== -->
+<div id="tab-multipla" style="display:none">
+  <div class="resumo" id="m_resumo">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+      <div>
+        <div style="font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Odd Total da Múltipla</div>
+        <div class="resumo-odd" id="m_oddTotal">1.00</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:4px">Jogos</div>
+        <div style="font-size:24px;font-weight:900;color:var(--text);font-family:'Poppins',sans-serif" id="m_numJogos">0</div>
+      </div>
+    </div>
+    <div class="resumo-row"><span class="resumo-label">Stake</span><span class="resumo-val" id="m_stakeShow">R$ –</span></div>
+    <div class="resumo-row"><span class="resumo-label">Retorno potencial</span><span class="resumo-val green" id="m_retorno">R$ –</span></div>
+    <div class="resumo-row" style="margin-bottom:8px"><span class="resumo-label">Lucro potencial</span><span class="resumo-val green" id="m_lucro">R$ –</span></div>
+    <div class="chips-jogos-sum" id="m_jogosChips"></div>
+  </div>
+
+  <div id="m_jogos_container"></div>
+
+  <button class="btn btn-add" onclick="addJogoMultipla()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Adicionar Jogo à Múltipla
+  </button>
+
+  <div class="divider"></div>
+
+  <div class="card">
+    <div class="section-title" style="margin-bottom:14px">Finalizar Múltipla</div>
+    <div class="row2" style="margin-bottom:14px">
+      <div>
+        <label class="label">Stake Total (R$)</label>
+        <input type="number" step="0.01" min="0" placeholder="100.00" id="m_stake" oninput="calcMultipla()">
+      </div>
+      <div>
+        <label class="label">Casa de Apostas</label>
+        <input placeholder="Bet365, Betano..." id="m_casa">
+      </div>
+    </div>
+    <div style="margin-bottom:14px">
+      <label class="label">Resultado Geral</label>
+      <div class="res-grid">
+        <div class="res-btn sel" data-r="pending" onclick="selRes(this,'m')">Em aberto</div>
+        <div class="res-btn" data-r="win" onclick="selRes(this,'m')">WIN</div>
+        <div class="res-btn" data-r="loss" onclick="selRes(this,'m')">LOSS</div>
+        <div class="res-btn" data-r="void" onclick="selRes(this,'m')">VOID</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:13px" onclick="salvar('multipla')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      Salvar Aposta Múltipla
+    </button>
+  </div>
+</div>
+
+<!-- ===== ABA PERSONALIZADA ===== -->
+<div id="tab-personalizada" style="display:none">
+  <div class="card">
+    <div class="section-title">Aposta Personalizada</div>
+    <div class="section-sub">Combine múltiplos mercados de um mesmo jogo</div>
+
+    <div style="margin-bottom:14px">
+      <label class="label">Jogo</label>
+      <div class="teams-row">
+        <div><input placeholder="Time da casa" id="p_time1" oninput="updatePLabel()"></div>
+        <div class="x-sep">X</div>
+        <div><input placeholder="Time visitante" id="p_time2" oninput="updatePLabel()"></div>
+      </div>
+      <div id="p_jogo_label" style="font-size:12px;color:var(--text2);text-align:center;margin-top:-6px;margin-bottom:8px">–</div>
+    </div>
+
+    <div class="row2" style="margin-bottom:14px">
+      <div>
+        <label class="label">Data</label>
+        <input type="date" id="p_data">
+      </div>
+      <div>
+        <label class="label">Casa de Apostas</label>
+        <input placeholder="Bet365, Betano..." id="p_casa">
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div>
+          <div class="section-title" style="font-size:13px">Mercados Combinados</div>
+          <div style="font-size:11px;color:var(--text2)">Adicione quantos mercados quiser do mesmo jogo</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:10px">
+        <label class="label">Mercados rápidos</label>
+        <div class="mercados-wrap">
+          <div class="mercado-chip" onclick="addMercadoPersonalizado('1 (Casa)','')">1 (Casa)</div>
+          <div class="mercado-chip" onclick="addMercadoPersonalizado('X (Empate)','')">X (Empate)</div>
+          <div class="mercado-chip" onclick="addMercadoPersonalizado('2 (Fora)','')">2 (Fora)</div>
+          <div class="mercado-chip" onclick="addMercadoPersonalizado('Ambas Marcam','')">Ambas Marcam</div>
+          <div class="mercado-chip" onclick="addMercadoPersonalizado('Mais de 2.5','')">+ 2.5</div>
+          <div class="mercado-chip" onclick="addMercadoPersonalizado('Menos de 2.5','')">- 2.5</div>
+          <div class="mercado-chip" onclick="addMercadoPersonalizado('Mais de 3.5','')">+ 3.5</div>
+          <div class="mercado-chip" onclick="addMercadoPersonalizado('1ª Metade 1X','')">1ª Metade 1X</div>
+          <div class="mercado-chip" onclick="addMercadoPersonalizado('Asian HCP -0.5','')">AHC -0.5</div>
+          <div class="mercado-chip" onclick="addMercadoPersonalizado('Clean Sheet Casa','')">Clean Sheet</div>
+          <div class="mercado-chip" onclick="addMercadoPersonalizado('+2.5 Escanteios','')">+2.5 Cantos</div>
+          <div class="mercado-chip" onclick="addMercadoPersonalizado('BTTS + Mais 2.5','')">BTTS + +2.5</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:6px;margin-bottom:14px">
+        <input placeholder="Mercado personalizado..." id="p_mkt_nome" style="flex:1">
+        <input type="number" step="0.01" min="1.01" placeholder="Odd" id="p_mkt_odd" style="width:90px">
+        <button class="btn btn-secondary btn-sm" onclick="addMktPersonalizado()" style="flex-shrink:0">+ Add</button>
+      </div>
+
+      <div id="p_mercados_lista" style="margin-bottom:10px">
+        <div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;border:1px dashed var(--border2);border-radius:8px">
+          Adicione mercados acima para montar sua aposta personalizada
+        </div>
+      </div>
+    </div>
+
+    <div id="p_resumo" style="display:none;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:14px;margin-bottom:14px">
+      <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Resumo da Aposta Personalizada</div>
+      <div id="p_combo_label" style="font-size:13px;color:var(--text);font-weight:600;margin-bottom:10px"></div>
+      <div class="resumo-row"><span class="resumo-label">Odd combinada</span><span style="font-size:18px;font-weight:900;color:var(--green);font-family:'Poppins',sans-serif" id="p_oddComb">1.00</span></div>
+      <div class="resumo-row"><span class="resumo-label">Retorno potencial</span><span class="resumo-val green" id="p_retorno">–</span></div>
+      <div class="resumo-row" style="margin-bottom:0"><span class="resumo-label">Lucro potencial</span><span class="resumo-val green" id="p_lucro">–</span></div>
+    </div>
+
+    <div class="row2" style="margin-bottom:14px">
+      <div>
+        <label class="label">Stake (R$)</label>
+        <input type="number" step="0.01" min="0" placeholder="100.00" id="p_stake" oninput="calcPersonalizada()">
+      </div>
+      <div style="display:flex;flex-direction:column;justify-content:flex-end">
+        <label class="label">Odd final (override)</label>
+        <input type="number" step="0.01" min="1.01" placeholder="Auto (calculado)" id="p_oddOverride" oninput="calcPersonalizada()">
+      </div>
+    </div>
+
+    <div style="margin-bottom:14px">
+      <label class="label">Resultado</label>
+      <div class="res-grid">
+        <div class="res-btn sel" data-r="pending" onclick="selRes(this,'p')">Em aberto</div>
+        <div class="res-btn" data-r="win" onclick="selRes(this,'p')">WIN</div>
+        <div class="res-btn" data-r="loss" onclick="selRes(this,'p')">LOSS</div>
+        <div class="res-btn" data-r="void" onclick="selRes(this,'p')">VOID</div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:13px" onclick="salvar('personalizada')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      Salvar Aposta Personalizada
+    </button>
+  </div>
+</div>
+
+<!-- ===== ABA SISTEMA ===== -->
+<div id="tab-sistema" style="display:none">
+  <div class="card">
+    <div class="section-title">Aposta Sistema</div>
+    <div class="section-sub">Sistema 2/3, Trixie, Patent, Yankee e outros</div>
+
+    <div style="margin-bottom:14px">
+      <label class="label">Tipo de Sistema</label>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px">
+        <div class="tipo-btn active" onclick="selSistema(this,'2/3')">Sistema 2/3<br><span style="font-size:10px;font-weight:400;color:var(--text2)">3 seleções, 3 duplas</span></div>
+        <div class="tipo-btn" onclick="selSistema(this,'Trixie')">Trixie<br><span style="font-size:10px;font-weight:400;color:var(--text2)">3 duplas + 1 tripla</span></div>
+        <div class="tipo-btn" onclick="selSistema(this,'Patent')">Patent<br><span style="font-size:10px;font-weight:400;color:var(--text2)">7 apostas (singles+)</span></div>
+        <div class="tipo-btn" onclick="selSistema(this,'Yankee')">Yankee<br><span style="font-size:10px;font-weight:400;color:var(--text2)">4 seleções, 11 apostas</span></div>
+      </div>
+    </div>
+
+    <div class="alert-warn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      No sistema <strong id="sis_tipo_label">2/3</strong>, você precisa acertar pelo menos 2 seleções para retornar lucro.
+    </div>
+
+    <div id="sis_selecoes_container"></div>
+
+    <button class="btn btn-add" style="margin-bottom:16px" onclick="addSelecaoSistema()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Adicionar Seleção
+    </button>
+
+    <div id="sis_resumo" style="display:none;background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:14px">
+      <div class="resumo-row"><span class="resumo-label">Nº de apostas no sistema</span><span class="resumo-val" id="sis_numApostas">–</span></div>
+      <div class="resumo-row"><span class="resumo-label">Custo total (stake × apostas)</span><span class="resumo-val red" id="sis_custoTotal">–</span></div>
+      <div class="resumo-row" style="margin-bottom:0"><span class="resumo-label">Retorno máximo potencial</span><span class="resumo-val green" id="sis_retornoMax">–</span></div>
+    </div>
+
+    <div class="row2" style="margin-bottom:14px">
+      <div>
+        <label class="label">Stake por aposta (R$)</label>
+        <input type="number" step="0.01" placeholder="10.00" id="sis_stake" oninput="calcSistema()">
+      </div>
+      <div>
+        <label class="label">Casa de Apostas</label>
+        <input placeholder="Bet365, Betano..." id="sis_casa">
+      </div>
+    </div>
+
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:13px" onclick="salvar('sistema')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      Salvar Aposta Sistema
+    </button>
+  </div>
+</div>
+
+</div>
+
+<div class="notify" id="notify">Aposta salva com sucesso!</div>
+
+<script>
+const tabs = ['simples','multipla','personalizada','sistema'];
+let activeTab = 'simples';
+const resStates = {s:'pending', m:'pending', p:'pending'};
+const pMercados = [];
+let mJogos = [];
+let sisSelecoes = [];
+let sisTipo = '2/3';
+
+function switchTab(tab, el) {
+  tabs.forEach(t => {
+    document.getElementById('tab-'+t).style.display = 'none';
+  });
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+tab).style.display = 'block';
+  el.classList.add('active');
+  activeTab = tab;
+  if(tab === 'multipla' && mJogos.length === 0) addJogoMultipla();
+  if(tab === 'sistema' && sisSelecoes.length === 0) { addSelecaoSistema(); addSelecaoSistema(); addSelecaoSistema(); }
+}
+
+function selMercado(el, prefix) {
+  document.querySelectorAll('#'+prefix+'_mercados .mercado-chip').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function addMktCustom(prefix) {
+  const inp = document.getElementById(prefix+'_mkt_custom');
+  const val = inp.value.trim();
+  if(!val) return;
+  const wrap = document.getElementById(prefix+'_mercados');
+  const chip = document.createElement('div');
+  chip.className = 'mercado-chip sel';
+  chip.textContent = val;
+  chip.onclick = function(){ selMercado(this, prefix); };
+  document.querySelectorAll('#'+prefix+'_mercados .mercado-chip').forEach(c => c.classList.remove('sel'));
+  wrap.insertBefore(chip, wrap.lastElementChild);
+  inp.value = '';
+}
+
+function selRes(el, prefix) {
+  el.closest('.res-grid').querySelectorAll('.res-btn').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+  resStates[prefix] = el.dataset.r;
+}
+
+function calcSimples() {
+  const odd = parseFloat(document.getElementById('s_odd').value)||0;
+  const stake = parseFloat(document.getElementById('s_stake').value)||0;
+  const prev = document.getElementById('s_preview');
+  if(odd>1 && stake>0) {
+    prev.style.display='block';
+    const ret = odd*stake;
+    document.getElementById('s_retorno').textContent = 'R$ '+ret.toFixed(2);
+    document.getElementById('s_lucro').textContent = 'R$ '+(ret-stake).toFixed(2);
+    document.getElementById('s_pct').textContent = (stake/1000*100).toFixed(1)+'% banca';
+  } else { prev.style.display='none'; }
+}
+
+/* ===== MÚLTIPLA ===== */
+function addJogoMultipla() {
+  const id = Date.now();
+  mJogos.push({id, time1:'', time2:'', mercado:'1X2', selecao:'', odd:''});
+  renderJogosMultipla();
+}
+
+function renderJogosMultipla() {
+  const cont = document.getElementById('m_jogos_container');
+  cont.innerHTML = mJogos.map((j,i) => `
+    <div class="jogo-row" id="mjogo_${j.id}">
+      <div class="jogo-header">
+        <span class="jogo-num">${i+1}</span>
+        <span class="jogo-header-title">Jogo ${i+1}</span>
+        ${mJogos.length>1 ? `<button class="btn btn-ghost btn-sm" onclick="removeJogo(${j.id})">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Remover
+        </button>` : ''}
+      </div>
+      <div class="teams-row" style="margin-bottom:10px">
+        <input placeholder="Time da casa" value="${j.time1}" oninput="updateJogo(${j.id},'time1',this.value)" style="font-size:12px">
+        <div class="x-sep">X</div>
+        <input placeholder="Time visitante" value="${j.time2}" oninput="updateJogo(${j.id},'time2',this.value)" style="font-size:12px">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 80px;gap:8px;margin-bottom:8px">
+        <div>
+          <label class="label" style="font-size:10px">Mercado</label>
+          <select oninput="updateJogo(${j.id},'mercado',this.value)" style="font-size:12px">
+            <option>1X2</option><option>Dupla Chance</option><option>Ambas Marcam</option>
+            <option>Mais de 2.5</option><option>Menos de 2.5</option><option>Mais de 3.5</option>
+            <option>Asian HCP</option><option>Escanteios</option><option>Cartões</option><option>Personalizado</option>
+          </select>
+        </div>
+        <div>
+          <label class="label" style="font-size:10px">Seleção</label>
+          <input placeholder="1, X, 2, Sim..." value="${j.selecao}" oninput="updateJogo(${j.id},'selecao',this.value)" style="font-size:12px">
+        </div>
+        <div>
+          <label class="label" style="font-size:10px">Odd</label>
+          <input type="number" step="0.01" min="1.01" placeholder="2.50" value="${j.odd}" oninput="updateJogo(${j.id},'odd',this.value);calcMultipla()" class="odd-input" style="font-size:13px;width:100%">
+        </div>
+      </div>
+    </div>
+  `).join('');
+  calcMultipla();
+}
+
+function updateJogo(id, field, val) {
+  const j = mJogos.find(x=>x.id===id);
+  if(j) j[field]=val;
+  calcMultipla();
+}
+
+function removeJogo(id) {
+  mJogos = mJogos.filter(x=>x.id!==id);
+  renderJogosMultipla();
+}
+
+function calcMultipla() {
+  const odds = mJogos.map(j=>parseFloat(j.odd)||0).filter(o=>o>1);
+  const oddTotal = odds.reduce((a,b)=>a*b, 1);
+  const stake = parseFloat(document.getElementById('m_stake')?.value)||0;
+  document.getElementById('m_oddTotal').textContent = oddTotal.toFixed(2);
+  document.getElementById('m_numJogos').textContent = mJogos.length;
+  if(stake>0) {
+    document.getElementById('m_stakeShow').textContent = 'R$ '+stake.toFixed(2);
+    const ret = oddTotal*stake;
+    document.getElementById('m_retorno').textContent = 'R$ '+ret.toFixed(2);
+    document.getElementById('m_lucro').textContent = 'R$ '+(ret-stake).toFixed(2);
+  }
+  const chips = document.getElementById('m_jogosChips');
+  chips.innerHTML = mJogos.map((j,i)=>{
+    const nome = j.time1&&j.time2 ? j.time1+' x '+j.time2 : 'Jogo '+(i+1);
+    const o = parseFloat(j.odd)||0;
+    return `<span class="chip-jogo">${nome}${o>0?' @ '+o.toFixed(2):''}</span>`;
+  }).join('');
+}
+
+/* ===== PERSONALIZADA ===== */
+function updatePLabel() {
+  const t1 = document.getElementById('p_time1').value.trim();
+  const t2 = document.getElementById('p_time2').value.trim();
+  const lbl = document.getElementById('p_jogo_label');
+  if(t1||t2) lbl.innerHTML = `<strong style="color:var(--text)">${t1||'?'}</strong> <span style="color:var(--green);margin:0 6px">×</span> <strong style="color:var(--text)">${t2||'?'}</strong>`;
+  else lbl.textContent = '–';
+  updatePComboLabel();
+}
+
+function addMercadoPersonalizado(nome, odd='') {
+  const id = 'pm_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+  pMercados.push({id, nome, odd: parseFloat(odd)||''});
+  renderPMercados();
+}
+
+function addMktPersonalizado() {
+  const nome = document.getElementById('p_mkt_nome').value.trim();
+  const odd = document.getElementById('p_mkt_odd').value;
+  if(!nome) { document.getElementById('p_mkt_nome').focus(); return; }
+  addMercadoPersonalizado(nome, odd);
+  document.getElementById('p_mkt_nome').value = '';
+  document.getElementById('p_mkt_odd').value = '';
+}
+
+function renderPMercados() {
+  const cont = document.getElementById('p_mercados_lista');
+  if(pMercados.length === 0) {
+    cont.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;border:1px dashed var(--border2);border-radius:8px">Adicione mercados acima para montar sua aposta personalizada</div>';
+    document.getElementById('p_resumo').style.display='none';
+    return;
+  }
+  cont.innerHTML = pMercados.map((m,i) => `
+    <div class="mercado-linha">
+      <span class="jogo-num">${i+1}</span>
+      <span class="mercado-nome">${m.nome}</span>
+      <input type="number" step="0.01" min="1.01" placeholder="Odd" value="${m.odd}" class="odd-input" style="width:80px;font-size:12px" oninput="updatePMkt('${m.id}',this.value)">
+      <button onclick="removePMkt('${m.id}')" style="background:rgba(255,59,48,.1);border:none;color:var(--red);width:26px;height:26px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">×</button>
+    </div>
+  `).join('');
+  document.getElementById('p_resumo').style.display='block';
+  calcPersonalizada();
+  updatePComboLabel();
+}
+
+function updatePMkt(id, val) {
+  const m = pMercados.find(x=>x.id===id);
+  if(m) m.odd = parseFloat(val)||'';
+  calcPersonalizada();
+}
+
+function removePMkt(id) {
+  const idx = pMercados.findIndex(x=>x.id===id);
+  if(idx>-1) pMercados.splice(idx,1);
+  renderPMercados();
+}
+
+function updatePComboLabel() {
+  const lbl = document.getElementById('p_combo_label');
+  if(!lbl) return;
+  const t1 = document.getElementById('p_time1').value.trim()||'Time A';
+  const t2 = document.getElementById('p_time2').value.trim()||'Time B';
+  const mkts = pMercados.map(m=>m.nome).join(' + ');
+  lbl.textContent = `${t1} x ${t2}: ${mkts||'–'}`;
+}
+
+function calcPersonalizada() {
+  const overrideEl = document.getElementById('p_oddOverride');
+  const override = parseFloat(overrideEl?.value)||0;
+  const stakeEl = document.getElementById('p_stake');
+  const stake = parseFloat(stakeEl?.value)||0;
+  const odds = pMercados.map(m=>parseFloat(m.odd)||0).filter(o=>o>1);
+  const oddComb = override>1 ? override : (odds.length>0 ? odds.reduce((a,b)=>a*b,1) : 1);
+  document.getElementById('p_oddComb').textContent = oddComb.toFixed(2);
+  if(stake>0) {
+    const ret = oddComb*stake;
+    document.getElementById('p_retorno').textContent = 'R$ '+ret.toFixed(2);
+    document.getElementById('p_lucro').textContent = 'R$ '+(ret-stake).toFixed(2);
+  } else {
+    document.getElementById('p_retorno').textContent = '–';
+    document.getElementById('p_lucro').textContent = '–';
+  }
+  updatePComboLabel();
+}
+
+/* ===== SISTEMA ===== */
+function selSistema(el, tipo) {
+  document.querySelectorAll('#tab-sistema .tipo-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  sisTipo = tipo;
+  document.getElementById('sis_tipo_label').textContent = tipo;
+  calcSistema();
+}
+
+function addSelecaoSistema() {
+  const id = Date.now()+Math.random();
+  sisSelecoes.push({id, evento:'', selecao:'', odd:''});
+  renderSelecoesSistema();
+}
+
+function renderSelecoesSistema() {
+  const cont = document.getElementById('sis_selecoes_container');
+  cont.innerHTML = sisSelecoes.map((s,i)=>`
+    <div class="jogo-row" style="margin-bottom:8px">
+      <div class="jogo-header" style="margin-bottom:8px">
+        <span class="jogo-num">${i+1}</span>
+        <span class="jogo-header-title" style="font-size:12px">Seleção ${i+1}</span>
+        ${sisSelecoes.length>1 ? `<button class="btn btn-ghost btn-sm" onclick="removeSelecao('${s.id}')">× Remover</button>` : ''}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 80px;gap:8px">
+        <input placeholder="Evento / Jogo" value="${s.evento}" oninput="updateSelecao('${s.id}','evento',this.value)" style="font-size:12px">
+        <input placeholder="Seleção (1, X, 2...)" value="${s.selecao}" oninput="updateSelecao('${s.id}','selecao',this.value)" style="font-size:12px">
+        <input type="number" step="0.01" min="1.01" placeholder="Odd" value="${s.odd}" oninput="updateSelecao('${s.id}','odd',this.value);calcSistema()" class="odd-input" style="font-size:12px;width:100%">
+      </div>
+    </div>
+  `).join('');
+  calcSistema();
+}
+
+function updateSelecao(id, field, val) {
+  const s = sisSelecoes.find(x=>String(x.id)===String(id));
+  if(s) s[field]=val;
+}
+
+function removeSelecao(id) {
+  sisSelecoes = sisSelecoes.filter(x=>String(x.id)!==String(id));
+  renderSelecoesSistema();
+}
+
+function calcSistema() {
+  const stake = parseFloat(document.getElementById('sis_stake')?.value)||0;
+  const numSel = sisSelecoes.length;
+  const sisMap = {'2/3':3,'Trixie':4,'Patent':7,'Yankee':11};
+  const numApostas = sisMap[sisTipo]||3;
+  const odds = sisSelecoes.map(s=>parseFloat(s.odd)||0).filter(o=>o>1);
+  const maxOdd = odds.reduce((a,b)=>a*b,1);
+  const custo = stake*numApostas;
+  const retMax = maxOdd*stake;
+  const res = document.getElementById('sis_resumo');
+  if(stake>0 || odds.length>0) {
+    res.style.display='block';
+    document.getElementById('sis_numApostas').textContent = numApostas;
+    document.getElementById('sis_custoTotal').textContent = stake>0 ? 'R$ '+custo.toFixed(2) : '–';
+    document.getElementById('sis_retornoMax').textContent = stake>0 && odds.length>0 ? 'R$ '+retMax.toFixed(2) : '–';
+  } else { res.style.display='none'; }
+}
+
+/* ===== SALVAR ===== */
+function salvar(tipo) {
+  const notify = document.getElementById('notify');
+  const msgs = {simples:'Aposta simples salva!', multipla:'Aposta múltipla salva!', personalizada:'Aposta personalizada salva!', sistema:'Aposta sistema salva!'};
+  notify.textContent = msgs[tipo]||'Aposta salva!';
+  notify.style.opacity='1';
+  setTimeout(()=>notify.style.opacity='0', 2500);
+  if(tipo==='multipla'){ mJogos=[]; addJogoMultipla(); calcMultipla(); }
+  if(tipo==='personalizada'){ pMercados.length=0; renderPMercados(); document.getElementById('p_time1').value=''; document.getElementById('p_time2').value=''; document.getElementById('p_jogo_label').textContent='–'; }
+}
+
+/* ===== INIT ===== */
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('s_data').value = today;
+document.getElementById('p_data').value = today;
+addJogoMultipla();
+</script>
+
+      
+      <!-- HISTORICO -->
+      <div class="page" id="page-historico">
+        <div class="card" style="margin-bottom:16px">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <div class="search-wrap" style="flex:1;min-width:200px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input class="form-input" type="text" placeholder="Buscar aposta..." id="searchInput" oninput="filterApostas()">
+            </div>
+            <select class="form-input" style="width:140px" id="filterTipo" onchange="filterApostas()">
+              <option value="">Todos os tipos</option>
+              <option>Simples</option>
+              <option>Múltipla</option>
+              <option>Sistema</option>
+              <option>Live</option>
+            </select>
+            <select class="form-input" style="width:140px" id="filterResultado" onchange="filterApostas()">
+              <option value="">Todos status</option>
+              <option value="win">WIN</option>
+              <option value="loss">LOSS</option>
+              <option value="void">VOID</option>
+              <option value="pending">Em aberto</option>
+            </select>
+            <button class="btn btn-secondary" onclick="exportCSV()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exportar CSV
+            </button>
+          </div>
+        </div>
+        
+        <div class="chip-group" id="chipFilters">
+          <div class="chip active" onclick="chipFilter(this,'')">Todas</div>
+          <div class="chip" onclick="chipFilter(this,'win')">Wins</div>
+          <div class="chip" onclick="chipFilter(this,'loss')">Losses</div>
+          <div class="chip" onclick="chipFilter(this,'pending')">Em aberto</div>
+        </div>
+        
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Evento</th>
+                  <th>Casa</th>
+                  <th>Tipo</th>
+                  <th>Odd</th>
+                  <th>Stake</th>
+                  <th>Status</th>
+                  <th>P&L</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="historicoTable">
+                <tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text3)">Nenhuma aposta ainda. Comece registrando sua primeira aposta!</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="histPagination" style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:12px;color:var(--text2)"></div>
+        </div>
+      </div>
+      
+      <!-- RELATORIOS -->
+      <div class="page" id="page-relatorios">
+        <div class="grid-3">
+          <div class="card-sm" id="rep_totalInvestido">
+            <div class="stat-label">Total Investido</div>
+            <div class="stat-value" id="totalInvestidoVal">R$ 0</div>
+          </div>
+          <div class="card-sm">
+            <div class="stat-label">Lucro Bruto</div>
+            <div class="stat-value green" id="lucroBrutoVal">R$ 0</div>
+          </div>
+          <div class="card-sm">
+            <div class="stat-label">Sequência Atual</div>
+            <div class="stat-value" id="sequenciaVal">0</div>
+            <div class="stat-change" id="sequenciaTipo"></div>
+          </div>
+        </div>
+        
+        <div class="grid-2">
+          <div class="card">
+            <div class="section-header">
+              <div class="section-title">P&L por Mês</div>
+            </div>
+            <div class="chart-wrap" style="height:220px">
+              <canvas id="monthChart" role="img" aria-label="Gráfico de P&L mensal"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="section-header">
+              <div class="section-title">Apostas por Tipo</div>
+            </div>
+            <div class="chart-wrap" style="height:220px">
+              <canvas id="tipoChart" role="img" aria-label="Gráfico de apostas por tipo"></canvas>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="section-header">
+            <div class="section-title">Desempenho por Odd</div>
+            <div class="section-sub">Faixa de odds vs taxa de acerto</div>
+          </div>
+          <div class="chart-wrap" style="height:200px">
+            <canvas id="oddChart" role="img" aria-label="Gráfico de desempenho por faixa de odd"></canvas>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="section-header">
+            <div class="section-title">Melhores Apostas</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Evento</th><th>Odd</th><th>Stake</th><th>Lucro</th><th>ROI</th></tr>
+              </thead>
+              <tbody id="melhoresTable">
+                <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text3)">Nenhum dado</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- GESTÃO DE RISCO -->
+      <div class="page" id="page-gestaoRisco">
+        <div class="grid-2">
+          <div class="card">
+            <div class="section-title" style="margin-bottom:16px">Calculadora Kelly</div>
+            <div class="alert alert-green">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
+              O critério de Kelly ajuda a definir o stake ideal baseado na sua vantagem.
+            </div>
+            <div class="form-group">
+              <label class="form-label">Probabilidade real (% que você estima)</label>
+              <input class="form-input" type="number" placeholder="55" min="1" max="99" id="kellyProb" oninput="calcKelly()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Odd oferecida pela casa</label>
+              <input class="form-input" type="number" step="0.01" placeholder="2.10" id="kellyOdd" oninput="calcKelly()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fração Kelly</label>
+              <select class="form-input" id="kellyFrac" onchange="calcKelly()">
+                <option value="1">Kelly Completo (agressivo)</option>
+                <option value="0.5" selected>Meio Kelly (moderado)</option>
+                <option value="0.25">¼ Kelly (conservador)</option>
+              </select>
+            </div>
+            <div class="kelly-result" id="kellyResult" style="display:none">
+              <div style="font-size:12px;color:var(--text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Stake Sugerido</div>
+              <div class="kelly-big" id="kellyStake">R$ 0</div>
+              <div class="kelly-unit" id="kellyPct">0% da banca</div>
+              <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap" id="kellyInfo"></div>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="section-title" style="margin-bottom:16px">Nível de Risco Atual</div>
+            <div style="margin-bottom:20px">
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px">
+                <span style="color:var(--text2)">Saúde da Banca</span>
+                <span id="saudePct" style="font-weight:600">–</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" id="saudeBar" style="width:0%"></div>
+              </div>
+              <div style="font-size:11px;color:var(--text3);margin-top:6px" id="saudeLabel">Registre apostas para ver seu nível de risco.</div>
+            </div>
+            
+            <div style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:14px">
+              <div class="section-title" style="font-size:13px;margin-bottom:12px">Metas de Gerenciamento</div>
+              <div style="margin-bottom:12px">
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
+                  <span style="color:var(--text2)">Stop Loss (–30%)</span>
+                  <span id="stopLossVal" style="color:var(--red)">R$ 0</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill red" id="stopLossBar" style="width:0%"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px">
+                  <span style="color:var(--text2)">Meta de Lucro (+20%)</span>
+                  <span id="metaLucroVal" style="color:var(--green)">R$ 0</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" id="metaLucroBar" style="width:0%"></div></div>
+              </div>
+            </div>
+            
+            <div class="section-title" style="font-size:13px;margin-bottom:10px">Regras de Ouro</div>
+            <div style="display:flex;flex-direction:column;gap:8px" id="regrasOuro">
+              <div class="alert alert-green"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Stake máximo: 5% da banca por aposta</div>
+              <div class="alert alert-green"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Stop loss diário: máximo 3 apostas em sequência</div>
+              <div class="alert alert-yellow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>Evite recuperar perdas aumentando stakes</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="section-title" style="margin-bottom:16px">Sugestão de Stake por Perfil</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px" id="stakeSugestoes"></div>
+        </div>
+      </div>
+      
+      <!-- CONFIGURACOES -->
+      <div class="page" id="page-configuracoes">
+        <div style="max-width:560px">
+          <div class="card" style="margin-bottom:16px">
+            <div class="section-title" style="margin-bottom:18px">Perfil</div>
+            <div class="form-group">
+              <label class="form-label">Nome</label>
+              <input class="form-input" type="text" value="Felipe Andrade" id="cfgNome">
+            </div>
+            <div class="form-group">
+              <label class="form-label">E-mail</label>
+              <input class="form-input" type="email" value="felipe@email.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Banca inicial (R$)</label>
+              <input class="form-input" type="number" id="cfgBanca" placeholder="1000.00">
+            </div>
+            <button class="btn btn-primary" onclick="salvarConfig()">Salvar Perfil</button>
+          </div>
+          
+          <div class="card" style="margin-bottom:16px">
+            <div class="section-title" style="margin-bottom:18px">Preferências</div>
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div>
+                  <div style="font-size:13px;font-weight:500;color:var(--text)">Moeda</div>
+                  <div style="font-size:12px;color:var(--text2)">Moeda padrão do sistema</div>
+                </div>
+                <select class="form-input" style="width:120px" id="cfgMoeda">
+                  <option value="BRL" selected>R$ BRL</option>
+                  <option value="USD">$ USD</option>
+                  <option value="EUR">€ EUR</option>
+                </select>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div>
+                  <div style="font-size:13px;font-weight:500;color:var(--text)">Notificações de risco</div>
+                  <div style="font-size:12px;color:var(--text2)">Alertar quando stake > 5% da banca</div>
+                </div>
+                <label class="toggle"><input type="checkbox" checked id="toggleNotif"><span class="toggle-slider"></span></label>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div>
+                  <div style="font-size:13px;font-weight:500;color:var(--text)">Calcular Kelly automático</div>
+                  <div style="font-size:12px;color:var(--text2)">Sugerir stake ao registrar aposta</div>
+                </div>
+                <label class="toggle"><input type="checkbox" id="toggleKelly"><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card" style="margin-bottom:16px">
+            <div class="section-title" style="margin-bottom:12px">Dados</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-secondary" onclick="exportCSV()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Exportar CSV
+              </button>
+              <button class="btn btn-secondary" onclick="importarDemo()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
+                Carregar Dados Demo
+              </button>
+              <button class="btn btn-danger" onclick="limparTudo()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                Limpar Tudo
+              </button>
+            </div>
+          </div>
+          
+          <div style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">
+            Controle de Banca v1.0 — © 2026 Felipe Andrade<br>
+            <span style="color:var(--green)">Projeto 100% Gratuito</span>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR APOSTA -->
+<div class="modal-overlay" id="editModal" style="display:none" onclick="if(event.target===this)closeEditModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Editar Aposta</div>
+      <button class="modal-close" onclick="closeEditModal()">×</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Resultado</label>
+      <select class="form-input" id="editResultado">
+        <option value="pending">Em aberto</option>
+        <option value="win">WIN</option>
+        <option value="loss">LOSS</option>
+        <option value="void">VOID</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-secondary" style="flex:1;justify-content:center" onclick="closeEditModal()">Cancelar</button>
+      <button class="btn btn-primary" style="flex:2;justify-content:center" onclick="saveEdit()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+let state = {
+  banca: 1000,
+  bancaInicial: 1000,
+  apostas: [],
+  currentPage: 'dashboard',
+  editingId: null,
+  filterChip: ''
+};
+
+// ===== INIT =====
+function init(){
+  const saved = localStorage.getItem('cb_state');
+  if(saved){
+    try{ Object.assign(state, JSON.parse(saved)); }catch(e){}
+  }
+  // set default date
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('novaData').value = today;
+  updateAll();
+}
+
+function save(){
+  localStorage.setItem('cb_state', JSON.stringify(state));
+}
+
+// ===== AUTH =====
+function doLogin(){
+  document.getElementById('authPage').style.display='none';
+  document.getElementById('mainApp').style.display='flex';
+  updateAll();
+}
+function doRegister(){
+  const bi = parseFloat(document.getElementById('bancaInicial').value)||1000;
+  state.bancaInicial = bi;
+  state.banca = bi;
+  save();
+  document.getElementById('authPage').style.display='none';
+  document.getElementById('mainApp').style.display='flex';
+  updateAll();
+}
+function doLogout(){
+  document.getElementById('mainApp').style.display='none';
+  document.getElementById('authPage').style.display='flex';
+}
+function showRegister(){
+  document.getElementById('loginForm').style.display='none';
+  document.getElementById('registerForm').style.display='block';
+}
+function showLogin(){
+  document.getElementById('loginForm').style.display='block';
+  document.getElementById('registerForm').style.display='none';
+}
+
+// ===== NAVIGATION =====
+function showPage(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  state.currentPage = page;
+  const titles = {dashboard:'Dashboard',novaAposta:'Nova Aposta',historico:'Histórico de Apostas',relatorios:'Relatórios & Análises',gestaoRisco:'Gestão de Risco',configuracoes:'Configurações'};
+  document.getElementById('pageTitle').textContent = titles[page]||page;
+  // highlight nav
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes(page)) n.classList.add('active');
+  });
+  if(page==='relatorios') renderRelatorios();
+  if(page==='gestaoRisco') renderGestaoRisco();
+  if(page==='historico') renderHistorico();
+  if(page==='configuracoes') renderConfig();
+}
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ===== CALC STATS =====
+function calcStats(){
+  const apostas = state.apostas;
+  const finished = apostas.filter(a=>a.resultado!=='pending');
+  const wins = apostas.filter(a=>a.resultado==='win');
+  const losses = apostas.filter(a=>a.resultado==='loss');
+  const totalStake = finished.reduce((s,a)=>s+(a.resultado!=='void'?parseFloat(a.stake):0),0);
+  const totalPL = apostas.reduce((s,a)=>s+parseFloat(a.pl||0),0);
+  const roi = totalStake>0?(totalPL/totalStake*100):0;
+  const acerto = finished.filter(a=>a.resultado!=='void').length>0 ? (wins.length / finished.filter(a=>a.resultado!=='void').length*100):0;
+  const oddMedia = apostas.length>0?(apostas.reduce((s,a)=>s+parseFloat(a.odd),0)/apostas.length):0;
+  const maiorPerda = losses.length>0?Math.max(...losses.map(a=>Math.abs(parseFloat(a.pl)))):0;
+  return {wins,losses,finished,totalStake,totalPL,roi,acerto,oddMedia,maiorPerda};
+}
+
+function calcPL(aposta){
+  const stake = parseFloat(aposta.stake)||0;
+  const odd = parseFloat(aposta.odd)||1;
+  if(aposta.resultado==='win') return (stake*odd)-stake;
+  if(aposta.resultado==='loss') return -stake;
+  if(aposta.resultado==='void') return 0;
+  return 0;
+}
+
+// ===== UPDATE BANCA =====
+function recalcBanca(){
+  let b = state.bancaInicial;
+  const sorted = [...state.apostas].sort((a,b)=>new Date(a.data)-new Date(b.data));
+  sorted.forEach(a=>{
+    if(a.resultado!=='pending') b += parseFloat(a.pl||0);
+  });
+  state.banca = b;
+}
+
+// ===== UPDATE ALL UI =====
+function updateAll(){
+  recalcBanca();
+  const s = calcStats();
+  const fmt = v=>'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  
+  document.getElementById('bancaDisplay').textContent = fmt(state.banca);
+  document.getElementById('bancaInicialDisplay').textContent = fmt(state.bancaInicial);
+  const lucro = state.banca - state.bancaInicial;
+  const lucrEl = document.getElementById('lucroDisplay');
+  lucrEl.textContent = (lucro>=0?'+':'')+fmt(lucro);
+  lucrEl.style.color = lucro>=0?'var(--green)':'var(--red)';
+  const var_ = state.bancaInicial>0?((state.banca-state.bancaInicial)/state.bancaInicial*100):0;
+  const varEl = document.getElementById('variacaoDisplay');
+  varEl.textContent = (var_>=0?'+':'')+var_.toFixed(2)+'%';
+  varEl.style.color = var_>=0?'var(--green)':'var(--red)';
+  document.getElementById('totalApostasDisplay').textContent = state.apostas.length;
+  
+  const roiEl = document.getElementById('roiDisplay');
+  roiEl.textContent = s.roi.toFixed(2)+'%';
+  roiEl.className = 'stat-value '+(s.roi>=0?'green':'red');
+  document.getElementById('roiSub').textContent = s.roi>=0?'Retorno positivo ✓':'Retorno negativo';
+  document.getElementById('acertoDisplay').textContent = s.acerto.toFixed(1)+'%';
+  document.getElementById('acertoSub').textContent = `${s.wins.length} wins de ${s.finished.filter(a=>a.resultado!=='void').length} apostas`;
+  document.getElementById('oddMedia').textContent = s.oddMedia.toFixed(2);
+  document.getElementById('maiorPerda').textContent = 'R$ '+s.maiorPerda.toFixed(2);
+  document.getElementById('topbarBanca').textContent = fmt(state.banca);
+  
+  // pending badge
+  const pending = state.apostas.filter(a=>a.resultado==='pending').length;
+  const badge = document.getElementById('pendingBadge');
+  badge.textContent = pending>0?pending:'';
+  
+  renderUltimasApostas();
+  renderBancaChart();
+  renderResultChart();
+  save();
+}
+
+// ===== ULTIMA APOSTAS =====
+function renderUltimasApostas(){
+  const tb = document.getElementById('ultimasApostas');
+  const last5 = [...state.apostas].sort((a,b)=>new Date(b.data)-new Date(a.data)).slice(0,5);
+  if(!last5.length){
+    tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text3)">Nenhuma aposta registrada ainda. Clique em "Nova Aposta" para começar!</td></tr>';
+    return;
+  }
+  tb.innerHTML = last5.map(a=>`
+    <tr>
+      <td style="color:var(--text2)">${fmtDate(a.data)}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis">${a.evento||'–'}</td>
+      <td>${a.tipo}</td>
+      <td style="font-family:'Poppins',sans-serif;font-weight:600">${parseFloat(a.odd).toFixed(2)}</td>
+      <td>R$ ${parseFloat(a.stake).toFixed(2)}</td>
+      <td>${tagHTML(a.resultado)}</td>
+      <td style="font-weight:600;color:${plColor(a.pl)}">${plText(a.pl,a.resultado)}</td>
+    </tr>
+  `).join('');
+}
+
+// ===== CHARTS =====
+let bancaChartObj=null, resultChartObj=null, monthChartObj=null, tipoChartObj=null, oddChartObj=null;
+
+function renderBancaChart(){
+  const ctx = document.getElementById('bancaChart');
+  if(!ctx) return;
+  const sorted = [...state.apostas].filter(a=>a.resultado!=='pending').sort((a,b)=>new Date(a.data)-new Date(b.data));
+  let banca = state.bancaInicial;
+  const labels = ['Início'];
+  const data = [banca];
+  sorted.forEach(a=>{
+    banca += parseFloat(a.pl||0);
+    labels.push(fmtDate(a.data));
+    data.push(parseFloat(banca.toFixed(2)));
+  });
+  if(bancaChartObj) bancaChartObj.destroy();
+  bancaChartObj = new Chart(ctx,{
+    type:'line',
+    data:{
+      labels,
+      datasets:[{
+        label:'Banca',
+        data,
+        borderColor:'#00C853',
+        backgroundColor:'rgba(0,200,83,.08)',
+        fill:true,
+        tension:.4,
+        pointRadius:data.length<20?4:0,
+        pointBackgroundColor:'#00C853',
+        borderWidth:2
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'R$ '+c.raw.toLocaleString('pt-BR',{minimumFractionDigits:2})}}},
+      scales:{
+        x:{ticks:{color:'#AAB0C0',font:{size:10},maxTicksLimit:8},grid:{color:'rgba(255,255,255,.04)'}},
+        y:{ticks:{color:'#AAB0C0',font:{size:10},callback:v=>'R$'+v},grid:{color:'rgba(255,255,255,.04)'}}
+      }
+    }
+  });
+}
+
+function renderResultChart(){
+  const ctx = document.getElementById('resultChart');
+  if(!ctx) return;
+  const w = state.apostas.filter(a=>a.resultado==='win').length;
+  const l = state.apostas.filter(a=>a.resultado==='loss').length;
+  const v = state.apostas.filter(a=>a.resultado==='void').length;
+  const p = state.apostas.filter(a=>a.resultado==='pending').length;
+  if(resultChartObj) resultChartObj.destroy();
+  resultChartObj = new Chart(ctx,{
+    type:'doughnut',
+    data:{
+      labels:['Win','Loss','Void','Em aberto'],
+      datasets:[{data:[w,l,v,p],backgroundColor:['#00C853','#FF3B30','#FFC107','#3D4350'],borderWidth:0,hoverOffset:4}]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'72%',
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw}`}}}
+    }
+  });
+  const lg = document.getElementById('resultLegend');
+  const total = w+l+v+p||1;
+  lg.innerHTML = [
+    {label:'Win',val:w,color:'#00C853'},
+    {label:'Loss',val:l,color:'#FF3B30'},
+    {label:'Void',val:v,color:'#FFC107'},
+    {label:'Aberto',val:p,color:'#3D4350'}
+  ].map(x=>`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="width:10px;height:10px;border-radius:2px;background:${x.color};flex-shrink:0"></span>
+      <span style="font-size:12px;color:var(--text2);flex:1">${x.label}</span>
+      <span style="font-size:13px;font-weight:600;color:var(--text)">${x.val}</span>
+      <span style="font-size:11px;color:var(--text3)">${(x.val/total*100).toFixed(0)}%</span>
+    </div>
+  `).join('');
+}
+
+// ===== NOVA APOSTA =====
+let selectedResultado = 'pending';
+function selectResult(el){
+  document.querySelectorAll('.result-btn').forEach(b=>{
+    b.style.borderColor='var(--border2)';b.style.color='var(--text2)';b.style.background='transparent';
+  });
+  const val = el.dataset.val;
+  selectedResultado = val;
+  const colors = {win:'var(--green)',loss:'var(--red)',void:'var(--yellow)',pending:'var(--green)'};
+  el.style.borderColor = colors[val]||'var(--green)';
+  el.style.color = colors[val]||'var(--green)';
+  el.style.background = val==='win'?'rgba(0,200,83,.1)':val==='loss'?'rgba(255,59,48,.1)':val==='void'?'rgba(255,193,7,.1)':'rgba(0,200,83,.1)';
+}
+function calcPreview(){
+  const stake = parseFloat(document.getElementById('novaStake').value)||0;
+  const odd = parseFloat(document.getElementById('novaOdd').value)||1;
+  const prev = document.getElementById('stakePreview');
+  if(stake>0&&odd>0){
+    prev.style.display='block';
+    const retorno = stake*odd;
+    const lucro = retorno-stake;
+    const pct = state.banca>0?(stake/state.banca*100):0;
+    document.getElementById('retornoPotencial').textContent='R$ '+retorno.toFixed(2);
+    document.getElementById('lucroPotencial').textContent='R$ '+lucro.toFixed(2);
+    const pctEl = document.getElementById('pctBanca');
+    pctEl.textContent=pct.toFixed(1)+'%';
+    pctEl.style.color = pct>5?'var(--red)':pct>3?'var(--yellow)':'var(--green)';
+  } else { prev.style.display='none'; }
+}
+function salvarAposta(){
+  const evento = document.getElementById('novaEvento').value.trim();
+  const data = document.getElementById('novaData').value;
+  const tipo = document.getElementById('novaTipo').value;
+  const odd = parseFloat(document.getElementById('novaOdd').value);
+  const stake = parseFloat(document.getElementById('novaStake').value);
+  const casa = document.getElementById('novaCasa').value.trim();
+  const notas = document.getElementById('novaNotas').value.trim();
+  if(!data||!odd||!stake){alert('Preencha data, odd e stake!');return;}
+  if(odd<1){alert('Odd deve ser maior que 1');return;}
+  if(stake<=0){alert('Stake deve ser maior que 0');return;}
+  const resultado = selectedResultado;
+  const pl = calcPL({stake,odd,resultado});
+  const aposta = {
+    id:Date.now(),
+    evento:evento||'Aposta sem nome',
+    data,tipo,odd,stake,casa,notas,resultado,
+    pl:parseFloat(pl.toFixed(2))
+  };
+  state.apostas.push(aposta);
+  updateAll();
+  limparForm();
+  showPage('historico');
+}
+function limparForm(){
+  document.getElementById('novaEvento').value='';
+  document.getElementById('novaOdd').value='';
+  document.getElementById('novaStake').value='';
+  document.getElementById('novaCasa').value='';
+  document.getElementById('novaNotas').value='';
+  document.getElementById('stakePreview').style.display='none';
+  selectedResultado='pending';
+  document.querySelectorAll('.result-btn').forEach(b=>{b.style.borderColor='var(--border2)';b.style.color='var(--text2)';b.style.background='transparent';});
+  document.querySelector('.result-btn[data-val="pending"]').style.borderColor='var(--green)';
+  document.querySelector('.result-btn[data-val="pending"]').style.color='var(--green)';
+  document.querySelector('.result-btn[data-val="pending"]').style.background='rgba(0,200,83,.1)';
+}
+
+// ===== HISTORICO =====
+function renderHistorico(){
+  let apostas = [...state.apostas].sort((a,b)=>new Date(b.data)-new Date(a.data));
+  const search = document.getElementById('searchInput')?.value?.toLowerCase()||'';
+  const tipo = document.getElementById('filterTipo')?.value||'';
+  const res = document.getElementById('filterResultado')?.value||'';
+  if(search) apostas=apostas.filter(a=>(a.evento||'').toLowerCase().includes(search)||(a.casa||'').toLowerCase().includes(search));
+  if(tipo) apostas=apostas.filter(a=>a.tipo===tipo);
+  if(res) apostas=apostas.filter(a=>a.resultado===res);
+  if(state.filterChip) apostas=apostas.filter(a=>a.resultado===state.filterChip);
+  const tb = document.getElementById('historicoTable');
+  if(!apostas.length){
+    tb.innerHTML='<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text3)">Nenhuma aposta encontrada.</td></tr>';
+    return;
+  }
+  tb.innerHTML = apostas.map(a=>`
+    <tr>
+      <td style="color:var(--text2)">${fmtDate(a.data)}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis" title="${a.evento}">${a.evento}</td>
+      <td style="color:var(--text2)">${a.casa||'–'}</td>
+      <td>${a.tipo}</td>
+      <td style="font-family:'Poppins',sans-serif;font-weight:600">${parseFloat(a.odd).toFixed(2)}</td>
+      <td>R$ ${parseFloat(a.stake).toFixed(2)}</td>
+      <td>${tagHTML(a.resultado)}</td>
+      <td style="font-weight:600;color:${plColor(a.pl)}">${plText(a.pl,a.resultado)}</td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button onclick="openEdit(${a.id})" style="background:var(--bg3);border:none;color:var(--text2);padding:4px 8px;border-radius:6px;cursor:pointer;font-size:11px">Editar</button>
+          <button onclick="deleteAposta(${a.id})" style="background:rgba(255,59,48,.1);border:none;color:var(--red);padding:4px 8px;border-radius:6px;cursor:pointer;font-size:11px">×</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+  const totalPL = apostas.reduce((s,a)=>s+parseFloat(a.pl||0),0);
+  document.getElementById('histPagination').innerHTML=`
+    <span>${apostas.length} apostas encontradas</span>
+    <span style="font-weight:600;color:${totalPL>=0?'var(--green)':'var(--red)'}">${totalPL>=0?'+':''}R$ ${Math.abs(totalPL).toFixed(2)} P&L total</span>
+  `;
+}
+function filterApostas(){ renderHistorico(); }
+function chipFilter(el,val){
+  state.filterChip=val;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderHistorico();
+}
+function openEdit(id){
+  state.editingId=id;
+  const a=state.apostas.find(x=>x.id===id);
+  if(a) document.getElementById('editResultado').value=a.resultado;
+  document.getElementById('editModal').style.display='flex';
+}
+function closeEditModal(){ document.getElementById('editModal').style.display='none'; state.editingId=null; }
+function saveEdit(){
+  const a=state.apostas.find(x=>x.id===state.editingId);
+  if(a){
+    a.resultado=document.getElementById('editResultado').value;
+    a.pl=parseFloat(calcPL(a).toFixed(2));
+  }
+  closeEditModal();
+  updateAll();
+  renderHistorico();
+}
+function deleteAposta(id){
+  if(!confirm('Remover esta aposta?')) return;
+  state.apostas=state.apostas.filter(a=>a.id!==id);
+  updateAll();
+  renderHistorico();
+}
+
+// ===== RELATORIOS =====
+function renderRelatorios(){
+  const s = calcStats();
+  document.getElementById('totalInvestidoVal').textContent='R$ '+s.totalStake.toFixed(2);
+  document.getElementById('lucroBrutoVal').textContent=(s.totalPL>=0?'+':'')+'R$ '+Math.abs(s.totalPL).toFixed(2);
+  // sequencia
+  const sorted=[...state.apostas].sort((a,b)=>new Date(b.data)-new Date(a.data)).filter(a=>a.resultado!=='pending'&&a.resultado!=='void');
+  let seq=0, tipo='';
+  if(sorted.length){
+    const first=sorted[0].resultado;
+    for(let a of sorted){ if(a.resultado===first) seq++; else break; }
+    tipo=first==='win'?'wins consecutivos':'losses consecutivos';
+  }
+  document.getElementById('sequenciaVal').textContent=seq;
+  document.getElementById('sequenciaTipo').textContent=tipo;
+  renderMonthChart();
+  renderTipoChart();
+  renderOddChart();
+  renderMelhores();
+}
+function renderMonthChart(){
+  const ctx=document.getElementById('monthChart'); if(!ctx) return;
+  const meses={};
+  state.apostas.filter(a=>a.resultado!=='pending').forEach(a=>{
+    const m=a.data.substring(0,7);
+    if(!meses[m]) meses[m]=0;
+    meses[m]+=parseFloat(a.pl||0);
+  });
+  const keys=Object.keys(meses).sort();
+  if(monthChartObj) monthChartObj.destroy();
+  monthChartObj=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:keys.map(k=>{const [y,m]=k.split('-');return ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][parseInt(m)-1]+'/'+y.slice(2)}),
+      datasets:[{
+        label:'P&L',
+        data:keys.map(k=>parseFloat(meses[k].toFixed(2))),
+        backgroundColor:keys.map(k=>meses[k]>=0?'rgba(0,200,83,.7)':'rgba(255,59,48,.7)'),
+        borderRadius:6,
+        borderWidth:0
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'R$ '+c.raw.toFixed(2)}}},
+      scales:{
+        x:{ticks:{color:'#AAB0C0',font:{size:10}},grid:{display:false}},
+        y:{ticks:{color:'#AAB0C0',font:{size:10},callback:v=>'R$'+v},grid:{color:'rgba(255,255,255,.04)'}}
+      }
+    }
+  });
+}
+function renderTipoChart(){
+  const ctx=document.getElementById('tipoChart'); if(!ctx) return;
+  const tipos={};
+  state.apostas.forEach(a=>{ tipos[a.tipo]=(tipos[a.tipo]||0)+1; });
+  const keys=Object.keys(tipos);
+  if(tipoChartObj) tipoChartObj.destroy();
+  tipoChartObj=new Chart(ctx,{
+    type:'doughnut',
+    data:{
+      labels:keys,
+      datasets:[{data:keys.map(k=>tipos[k]),backgroundColor:['#00C853','#63b3ed','#FFC107','#FF3B30','#9f7aea'],borderWidth:0}]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'60%',
+      plugins:{legend:{position:'right',labels:{color:'#AAB0C0',font:{size:11},boxWidth:10,padding:12}}}
+    }
+  });
+}
+function renderOddChart(){
+  const ctx=document.getElementById('oddChart'); if(!ctx) return;
+  const faixas={'1.01–1.50':[],'1.51–2.00':[],'2.01–3.00':[],'3.01–5.00':[],'5.01+':[]}; 
+  state.apostas.filter(a=>a.resultado==='win'||a.resultado==='loss').forEach(a=>{
+    const o=parseFloat(a.odd);
+    const k=o<=1.5?'1.01–1.50':o<=2?'1.51–2.00':o<=3?'2.01–3.00':o<=5?'3.01–5.00':'5.01+';
+    faixas[k].push(a);
+  });
+  const keys=Object.keys(faixas);
+  const taxas=keys.map(k=>{
+    const l=faixas[k]; if(!l.length) return 0;
+    return parseFloat((l.filter(a=>a.resultado==='win').length/l.length*100).toFixed(1));
+  });
+  const counts=keys.map(k=>faixas[k].length);
+  if(oddChartObj) oddChartObj.destroy();
+  oddChartObj=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:keys,
+      datasets:[
+        {label:'Taxa acerto (%)',data:taxas,backgroundColor:'rgba(0,200,83,.6)',borderRadius:6,yAxisID:'y'},
+        {label:'Qtd apostas',data:counts,type:'line',borderColor:'#FFC107',pointBackgroundColor:'#FFC107',tension:.4,yAxisID:'y1',borderWidth:2,pointRadius:4}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#AAB0C0',font:{size:11},boxWidth:10}}},
+      scales:{
+        x:{ticks:{color:'#AAB0C0',font:{size:10}},grid:{display:false}},
+        y:{ticks:{color:'#AAB0C0',font:{size:10},callback:v=>v+'%'},grid:{color:'rgba(255,255,255,.04)'},min:0,max:100},
+        y1:{position:'right',ticks:{color:'#FFC107',font:{size:10}},grid:{display:false}}
+      }
+    }
+  });
+}
+function renderMelhores(){
+  const tb=document.getElementById('melhoresTable');
+  const melhores=[...state.apostas].filter(a=>a.resultado==='win').sort((a,b)=>b.pl-a.pl).slice(0,5);
+  if(!melhores.length){ tb.innerHTML='<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text3)">Registre apostas para ver os melhores resultados.</td></tr>'; return; }
+  tb.innerHTML=melhores.map(a=>`
+    <tr>
+      <td>${a.evento}</td>
+      <td style="font-weight:700;color:var(--text)">${parseFloat(a.odd).toFixed(2)}</td>
+      <td>R$ ${parseFloat(a.stake).toFixed(2)}</td>
+      <td style="color:var(--green);font-weight:600">+R$ ${parseFloat(a.pl).toFixed(2)}</td>
+      <td><span class="tag tag-win">${(a.pl/a.stake*100).toFixed(0)}%</span></td>
+    </tr>
+  `).join('');
+}
+
+// ===== GESTÃO RISCO =====
+function calcKelly(){
+  const prob = parseFloat(document.getElementById('kellyProb').value)/100;
+  const odd = parseFloat(document.getElementById('kellyOdd').value);
+  const frac = parseFloat(document.getElementById('kellyFrac').value);
+  const result = document.getElementById('kellyResult');
+  if(!prob||!odd||prob<=0||prob>=1||odd<=1){ result.style.display='none'; return; }
+  const kelly = ((prob*(odd-1)-(1-prob))/(odd-1))*frac;
+  result.style.display='block';
+  if(kelly<=0){
+    document.getElementById('kellyStake').textContent='Sem vantagem';
+    document.getElementById('kellyPct').textContent='Não aposte neste evento';
+    document.getElementById('kellyInfo').innerHTML='<span class="badge badge-red">EV negativo</span>';
+    return;
+  }
+  const stake=state.banca*kelly;
+  document.getElementById('kellyStake').textContent='R$ '+stake.toFixed(2);
+  document.getElementById('kellyPct').textContent=(kelly*100).toFixed(2)+'% da banca (R$ '+state.banca.toFixed(2)+')';
+  const ev=(prob*((odd-1)*stake)-(1-prob)*stake);
+  document.getElementById('kellyInfo').innerHTML=`
+    <span class="badge badge-green">EV: +R$ ${ev.toFixed(2)}</span>
+    <span class="badge badge-gray">Prob. implícita: ${(1/odd*100).toFixed(1)}%</span>
+    <span class="badge badge-yellow">Sua prob: ${(prob*100).toFixed(1)}%</span>
+  `;
+}
+function renderGestaoRisco(){
+  const lucro = state.banca - state.bancaInicial;
+  const var_ = state.bancaInicial>0?((lucro/state.bancaInicial)*100):0;
+  const saude = Math.max(0,Math.min(100,50+var_));
+  document.getElementById('saudePct').textContent=var_.toFixed(1)+'%';
+  document.getElementById('saudeBar').style.width=saude+'%';
+  const cl = var_>10?'green':var_>-10?'yellow':'red';
+  document.getElementById('saudeBar').className='progress-fill '+(cl!=='green'?cl:'');
+  document.getElementById('saudeLabel').textContent=var_>10?'Banca saudável — continue assim!':var_>-10?'Banca estável — mantenha a disciplina.':'Atenção! Banca em queda — revise sua estratégia.';
+  // stop loss e meta
+  const stopLoss = state.bancaInicial*0.7;
+  const meta = state.bancaInicial*1.2;
+  document.getElementById('stopLossVal').textContent='R$ '+stopLoss.toFixed(2);
+  document.getElementById('metaLucroVal').textContent='R$ '+meta.toFixed(2);
+  const slPct = Math.max(0,Math.min(100,(state.banca-stopLoss)/(state.bancaInicial-stopLoss)*100));
+  const mlPct = Math.max(0,Math.min(100,(state.banca-state.bancaInicial)/(meta-state.bancaInicial)*100));
+  document.getElementById('stopLossBar').style.width=slPct+'%';
+  document.getElementById('metaLucroBar').style.width=mlPct+'%';
+  // stake sugestoes
+  const perc = [1,2,5];
+  const labels = ['Conservador (1%)','Moderado (2%)','Agressivo (5%)'];
+  const colors = ['var(--green)','var(--yellow)','var(--red)'];
+  document.getElementById('stakeSugestoes').innerHTML=perc.map((p,i)=>`
+    <div class="card-sm" style="text-align:center">
+      <div style="font-size:11px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">${labels[i]}</div>
+      <div style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;color:${colors[i]}">R$ ${(state.banca*p/100).toFixed(2)}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">${p}% de R$ ${state.banca.toFixed(2)}</div>
+    </div>
+  `).join('');
+}
+
+// ===== CONFIG =====
+function renderConfig(){
+  document.getElementById('cfgBanca').value=state.bancaInicial;
+}
+function salvarConfig(){
+  const novaBI=parseFloat(document.getElementById('cfgBanca').value);
+  if(novaBI>0&&novaBI!==state.bancaInicial){
+    if(confirm('Alterar banca inicial irá recalcular todas as estatísticas. Confirmar?')){
+      state.bancaInicial=novaBI;
+      updateAll();
+    }
+  }
+  alert('Configurações salvas!');
+}
+
+// ===== DEMO DATA =====
+function importarDemo(){
+  if(!confirm('Isso irá adicionar dados de demonstração. Continuar?')) return;
+  const eventos=['Flamengo vs Palmeiras','Real Madrid vs Barcelona','Manchester City vs Arsenal','Botafogo vs Fluminense','Bayern vs Dortmund','Liverpool vs Chelsea','Corinthians vs Santos','PSG vs Lyon','Brasil vs Argentina','Portugal vs França'];
+  const casas=['Bet365','Betano','SportingBet','Betfair','KTO'];
+  const tipos=['Simples','Simples','Simples','Múltipla','Simples'];
+  const resultados=['win','win','loss','win','loss','win','void','win','loss','win'];
+  const hoje=new Date();
+  for(let i=0;i<10;i++){
+    const d=new Date(hoje);d.setDate(d.getDate()-i*3);
+    const odd=(1.5+Math.random()*2).toFixed(2);
+    const stake=(50+Math.random()*150).toFixed(2);
+    const resultado=resultados[i];
+    const aposta={
+      id:Date.now()+i,
+      evento:eventos[i],
+      data:d.toISOString().split('T')[0],
+      tipo:tipos[i%5],
+      odd:parseFloat(odd),
+      stake:parseFloat(stake),
+      casa:casas[i%5],
+      notas:'',
+      resultado,
+      pl:parseFloat(calcPL({stake:parseFloat(stake),odd:parseFloat(odd),resultado}).toFixed(2))
+    };
+    state.apostas.push(aposta);
+  }
+  updateAll();
+  showPage('dashboard');
+}
+
+// ===== EXPORT =====
+function exportCSV(){
+  if(!state.apostas.length){alert('Nenhuma aposta para exportar.');return;}
+  const h=['ID','Data','Evento','Casa','Tipo','Odd','Stake','Resultado','P&L','Notas'];
+  const rows=state.apostas.map(a=>[a.id,a.data,`"${a.evento}"`,a.casa||'',a.tipo,a.odd,a.stake,a.resultado,a.pl,`"${a.notas||''}"`]);
+  const csv=[h,...rows].map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='controle-banca.csv';a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ===== LIMPAR =====
+function limparTudo(){
+  if(confirm('Tem certeza? Todos os dados serão removidos permanentemente!')){
+    state.apostas=[];state.banca=state.bancaInicial;
+    updateAll();
+    alert('Dados removidos.');
+  }
+}
+
+// ===== HELPERS =====
+function fmtDate(d){
+  if(!d) return '–';
+  const [y,m,day]=d.split('-');
+  return `${day}/${m}/${y}`;
+}
+function tagHTML(r){
+  if(r==='win') return '<span class="tag tag-win">WIN</span>';
+  if(r==='loss') return '<span class="tag tag-loss">LOSS</span>';
+  if(r==='void') return '<span class="tag tag-void">VOID</span>';
+  return '<span class="tag tag-pending">Aberto</span>';
+}
+function plColor(pl){
+  const v=parseFloat(pl||0);
+  if(v>0) return 'var(--green)';
+  if(v<0) return 'var(--red)';
+  return 'var(--text2)';
+}
+function plText(pl,res){
+  if(res==='pending') return '–';
+  const v=parseFloat(pl||0);
+  if(res==='void') return 'R$ 0,00';
+  return (v>=0?'+':'')+'R$ '+Math.abs(v).toFixed(2);
+}
+
+// ===== START =====
+init();
+</script>
+</body>
+</html>
